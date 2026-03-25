@@ -102,6 +102,8 @@ export default function AppLayout() {
   const [promptName, setPromptName] = useState<string | null>(null)
 
   const path = location.pathname
+  const projectMatch = path.match(/^\/projects\/(\d+)/)
+  const currentProjectId = projectMatch ? projectMatch[1] : null
 
   useEffect(() => {
     const projectMatch = path.match(/^\/projects\/(\d+)/)
@@ -236,11 +238,7 @@ export default function AppLayout() {
               items={breadcrumbItems.map((c) => ({
                 title:
                   c.href !== undefined ? (
-                    <span
-                      role="presentation"
-                      style={{ cursor: 'pointer' }}
-                      onClick={() => navigate(c.href!)}
-                    >
+                    <span style={{ cursor: 'pointer' }} onClick={() => navigate(c.href!)}>
                       {c.title}
                     </span>
                   ) : (
