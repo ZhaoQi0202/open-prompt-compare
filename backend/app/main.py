@@ -11,7 +11,7 @@ from app.config import settings
 from app.db.models import JudgeTemplate, User
 from app.deps import hash_password
 from app.routers import auth, projects, prompts, admin
-from app.routers import test_suites, model_configs, judge_templates, runs
+from app.routers import test_suites, model_configs, judge_templates, runs, playground
 
 DEFAULT_JUDGE_TEMPLATE = """You are an evaluation judge. Score the following AI output on a scale of 0-10.
 
@@ -59,6 +59,7 @@ app.include_router(judge_templates.router)
 app.include_router(runs.router)
 app.include_router(runs.project_runs_router)
 app.include_router(runs.judge_results_router)
+app.include_router(playground.router)
 
 
 from starlette.websockets import WebSocket
