@@ -102,8 +102,6 @@ export default function AppLayout() {
   const [promptName, setPromptName] = useState<string | null>(null)
 
   const path = location.pathname
-  const projectMatch = path.match(/^\/projects\/(\d+)/)
-  const currentProjectId = projectMatch ? projectMatch[1] : null
 
   useEffect(() => {
     const projectMatch = path.match(/^\/projects\/(\d+)/)
@@ -143,14 +141,37 @@ export default function AppLayout() {
     }
   }, [path])
 
-  const selectedKey = path.startsWith('/admin')
-    ? '/admin/users'
-    : path.startsWith('/model-configs')
-      ? '/model-configs'
-      : '/projects'
+  const selectedKey = (() => {
+    if (path.startsWith('/admin')) return '/admin/users'
+    if (path.startsWith('/model-configs')) return '/model-configs'
+    if (currentProjectId) {
+      const subKeys = [
+        `/projects/${currentProjectId}/test-suites`,
+        `/projects/${currentProjectId}/new-run`,
+        `/projects/${currentProjectId}/runs`,
+        `/projects/${currentProjectId}`,
+      ]
+      for (const k of subKeys) {
+        if (path.startsWith(k)) return k
+      }
+    }
+    return '/projects'
+  })()
 
   const menuItems = [
-    { key: '/projects', icon: <ProjectOutlined />, label: '项目' },
+    {
+      key: '/projects',
+      icon: <ProjectOutlined />,
+      label: '项目',
+      children: currentProjectId
+        ? [
+            { key: `/projects/${currentProjectId}`, label: '概览' },
+            { key: `/projects/${currentProjectId}/test-suites`, label: '测试集管理' },
+            { key: `/projects/${currentProjectId}/new-run`, label: '新建运行' },
+            { key: `/projects/${currentProjectId}/runs`, label: '运行历史' },
+          ]
+        : undefined,
+    },
     { key: '/model-configs', icon: <SettingOutlined />, label: '模型配置' },
     ...(isAdmin ? [{ key: '/admin/users', icon: <TeamOutlined />, label: '用户管理' }] : []),
   ]
@@ -199,6 +220,7 @@ export default function AppLayout() {
           theme="dark"
           mode="inline"
           selectedKeys={[selectedKey]}
+          openKeys={currentProjectId ? ['/projects'] : []}
           items={menuItems}
           onClick={({ key }) => navigate(key)}
           style={{ background: 'transparent', border: 'none', marginTop: 12, padding: '0 8px' }}
