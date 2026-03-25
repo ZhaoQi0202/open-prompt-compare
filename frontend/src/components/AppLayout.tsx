@@ -1,9 +1,95 @@
-import { Layout, Menu, Button, Typography, Space } from 'antd'
+import { useState, useEffect, useMemo } from 'react'
+import { Layout, Menu, Button, Typography, Space, Breadcrumb } from 'antd'
 import { ProjectOutlined, SettingOutlined, LogoutOutlined, TeamOutlined } from '@ant-design/icons'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from '../stores/authStore'
+import { getProject, listPrompts } from '../api/projects'
 
 const { Header, Sider, Content } = Layout
+
+type Crumb = { title: string; href?: string }
+
+function buildProjectBreadcrumbs(
+  path: string,
+  projectName: string | null,
+  promptName: string | null,
+): Crumb[] | null {
+  if (!path.startsWith('/projects')) return null
+  if (path === '/projects') {
+    return [{ title: '项目' }]
+  }
+
+  const compare = /^\/projects\/(\d+)\/runs\/(\d+)\/compare$/.exec(path)
+  if (compare) {
+    const [, projectId, rid] = compare
+    return [
+      { title: '项目', href: '/projects' },
+      { title: projectName ?? '…', href: `/projects/${projectId}` },
+      { title: `运行 #${rid}`, href: `/projects/${projectId}/runs/${rid}` },
+      { title: '对比' },
+    ]
+  }
+
+  const prompt = /^\/projects\/(\d+)\/prompts\/(\d+)$/.exec(path)
+  if (prompt) {
+    const [, projectId] = prompt
+    return [
+      { title: '项目', href: '/projects' },
+      { title: projectName ?? '…', href: `/projects/${projectId}` },
+      { title: `提示词: ${promptName ?? '…'}` },
+    ]
+  }
+
+  const testSuites = /^\/projects\/(\d+)\/test-suites$/.exec(path)
+  if (testSuites) {
+    const [, projectId] = testSuites
+    return [
+      { title: '项目', href: '/projects' },
+      { title: projectName ?? '…', href: `/projects/${projectId}` },
+      { title: '测试集管理' },
+    ]
+  }
+
+  const newRun = /^\/projects\/(\d+)\/new-run$/.exec(path)
+  if (newRun) {
+    const [, projectId] = newRun
+    return [
+      { title: '项目', href: '/projects' },
+      { title: projectName ?? '…', href: `/projects/${projectId}` },
+      { title: '新建运行' },
+    ]
+  }
+
+  const runDetail = /^\/projects\/(\d+)\/runs\/(\d+)$/.exec(path)
+  if (runDetail) {
+    const [, projectId, rid] = runDetail
+    return [
+      { title: '项目', href: '/projects' },
+      { title: projectName ?? '…', href: `/projects/${projectId}` },
+      { title: `运行 #${rid}` },
+    ]
+  }
+
+  const runs = /^\/projects\/(\d+)\/runs$/.exec(path)
+  if (runs) {
+    const [, projectId] = runs
+    return [
+      { title: '项目', href: '/projects' },
+      { title: projectName ?? '…', href: `/projects/${projectId}` },
+      { title: '运行历史' },
+    ]
+  }
+
+  const projectOnly = /^\/projects\/(\d+)$/.exec(path)
+  if (projectOnly) {
+    return [
+      { title: '项目', href: '/projects' },
+      { title: projectName ?? '…' },
+    ]
+  }
+
+  return null
+}
 
 export default function AppLayout() {
   const navigate = useNavigate()
@@ -12,7 +98,49 @@ export default function AppLayout() {
   const isAdmin = useAuthStore((s) => s.isAdmin)
   const username = useAuthStore((s) => s.username)
 
+  const [projectName, setProjectName] = useState<string | null>(null)
+  const [promptName, setPromptName] = useState<string | null>(null)
+
   const path = location.pathname
+
+  useEffect(() => {
+    const projectMatch = path.match(/^\/projects\/(\d+)/)
+    if (!projectMatch) {
+      setProjectName(null)
+      setPromptName(null)
+      return
+    }
+    const pid = Number(projectMatch[1])
+    let cancelled = false
+    getProject(pid)
+      .then((res) => {
+        if (!cancelled) setProjectName(res.data.name)
+      })
+      .catch(() => {
+        if (!cancelled) setProjectName(null)
+      })
+
+    const promptMatch = path.match(/^\/projects\/\d+\/prompts\/(\d+)/)
+    if (promptMatch) {
+      const prid = Number(promptMatch[1])
+      listPrompts(pid)
+        .then((res) => {
+          if (cancelled) return
+          const p = (res.data as { id: number; name: string }[]).find((x) => x.id === prid)
+          setPromptName(p?.name ?? null)
+        })
+        .catch(() => {
+          if (!cancelled) setPromptName(null)
+        })
+    } else {
+      setPromptName(null)
+    }
+
+    return () => {
+      cancelled = true
+    }
+  }, [path])
+
   const selectedKey = path.startsWith('/admin')
     ? '/admin/users'
     : path.startsWith('/model-configs')
@@ -24,6 +152,11 @@ export default function AppLayout() {
     { key: '/model-configs', icon: <SettingOutlined />, label: '模型配置' },
     ...(isAdmin ? [{ key: '/admin/users', icon: <TeamOutlined />, label: '用户管理' }] : []),
   ]
+
+  const breadcrumbItems = useMemo(
+    () => buildProjectBreadcrumbs(path, projectName, promptName),
+    [path, projectName, promptName],
+  )
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -97,6 +230,25 @@ export default function AppLayout() {
           </Space>
         </Header>
         <Content style={{ padding: '32px 40px 48px', background: '#f4f4f2', minHeight: 'calc(100vh - 64px)' }}>
+          {breadcrumbItems && breadcrumbItems.length > 0 ? (
+            <Breadcrumb
+              style={{ marginBottom: 16 }}
+              items={breadcrumbItems.map((c) => ({
+                title:
+                  c.href !== undefined ? (
+                    <span
+                      role="presentation"
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => navigate(c.href!)}
+                    >
+                      {c.title}
+                    </span>
+                  ) : (
+                    c.title
+                  ),
+              }))}
+            />
+          ) : null}
           <div
             className="opc-panel"
             style={{
