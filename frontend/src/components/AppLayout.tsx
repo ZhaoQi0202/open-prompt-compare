@@ -141,6 +141,9 @@ export default function AppLayout() {
     }
   }, [path])
 
+  const projectIdMatch = path.match(/^\/projects\/(\d+)/)
+  const currentProjectId = projectIdMatch ? projectIdMatch[1] : null
+
   const selectedKey = (() => {
     if (path.startsWith('/admin')) return '/admin/users'
     if (path.startsWith('/model-configs')) return '/model-configs'
@@ -163,14 +166,12 @@ export default function AppLayout() {
       key: '/projects',
       icon: <ProjectOutlined />,
       label: '项目',
-      children: currentProjectId
-        ? [
-            { key: `/projects/${currentProjectId}`, label: '概览' },
-            { key: `/projects/${currentProjectId}/test-suites`, label: '测试集管理' },
-            { key: `/projects/${currentProjectId}/new-run`, label: '新建运行' },
-            { key: `/projects/${currentProjectId}/runs`, label: '运行历史' },
-          ]
-        : undefined,
+      children: currentProjectId ? [
+        { key: `/projects/${currentProjectId}`, label: '概览' },
+        { key: `/projects/${currentProjectId}/test-suites`, label: '测试集管理' },
+        { key: `/projects/${currentProjectId}/new-run`, label: '新建运行' },
+        { key: `/projects/${currentProjectId}/runs`, label: '运行历史' },
+      ] : undefined,
     },
     { key: '/model-configs', icon: <SettingOutlined />, label: '模型配置' },
     ...(isAdmin ? [{ key: '/admin/users', icon: <TeamOutlined />, label: '用户管理' }] : []),
