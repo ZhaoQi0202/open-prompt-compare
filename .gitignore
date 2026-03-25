@@ -1,0 +1,11 @@
+__pycache__/
+.venv/
+*.pyc
+*.db
+*.sqlite
+backend/data/
+.env
+node_modules/
+dist/
+.superpowers/
+.trae/

@@ -1,0 +1,46 @@
+:root {
+  --opc-bg-shell: #0f0f0f;
+  --opc-bg-content: #f4f4f2;
+  --opc-bg-elevated: #ffffff;
+  --opc-border: #e8e8e6;
+  --opc-text: #0a0a0a;
+  --opc-text-muted: #525252;
+  --opc-radius-lg: 16px;
+  --opc-radius-md: 12px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--opc-bg-content);
+  color: var(--opc-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+.opc-page {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.opc-page-title {
+  margin: 0 0 24px;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.opc-panel {
+  background: var(--opc-bg-elevated);
+  border: 1px solid var(--opc-border);
+  border-radius: var(--opc-radius-lg);
+  padding: 28px 32px;
+}

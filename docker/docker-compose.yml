@@ -1,0 +1,16 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - prompt-data:/app/data
+    environment:
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - AUTH_PASSWORD=${AUTH_PASSWORD:-}
+      - DATABASE_URL=sqlite+aiosqlite:///data/app.db
+
+volumes:
+  prompt-data:
