@@ -54,8 +54,13 @@ export default function NewRunPage() {
   const totalCalls = selectedVersions.length * selectedModels.length * caseCount
 
   const handleSubmit = async () => {
+    let values: any
     try {
-      const values = await form.validateFields()
+      values = await form.validateFields()
+    } catch {
+      return
+    }
+    try {
       setLoading(true)
       const res = await createRun({
         name: values.name,

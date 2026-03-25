@@ -50,7 +50,7 @@ export default function CompareMatrix({ matrix, columns, page, totalPages, onPag
       width: 260,
       render: (_: unknown, row: any) => {
         const cell = row.results?.find(
-          (r: any) => r.prompt_version_id === col.version_id && r.model_config_id === col.model_id
+          (r: any) => r.version_id === col.version_id && r.model_id === col.model_id
         )
         if (!cell) return '-'
         const output = cell.output || ''
@@ -63,13 +63,13 @@ export default function CompareMatrix({ matrix, columns, page, totalPages, onPag
               </span>
             </Tooltip>
             <div style={{ marginTop: 4 }}>
-              {cell.judge_score != null && (
+              {cell.auto_score != null && (
                 <Tag
-                  color={scoreColor(cell.judge_score)}
+                  color={scoreColor(cell.auto_score)}
                   style={{ cursor: 'pointer' }}
-                  onClick={() => { setEditingId(cell.judge_result_id ?? cell.id); setEditScore(cell.human_score ?? cell.judge_score) }}
+                  onClick={() => { setEditingId(cell.judge_result_id ?? cell.id); setEditScore(cell.human_score ?? cell.auto_score) }}
                 >
-                  分数：{cell.judge_score}
+                  分数：{cell.auto_score}
                 </Tag>
               )}
               {cell.human_score != null && (

@@ -48,12 +48,12 @@ export default function RunComparePage() {
   const totalPages = compareData?.total_pages || 1
 
   const cols = summary.length > 0
-    ? [...new Set(summary.map((s: any) => JSON.stringify({ version_id: s.prompt_version_id, model_id: s.model_config_id, version_label: s.version_label || `v${s.prompt_version_id}`, model_label: s.model_label || `model${s.model_config_id}` })))].map((s: any) => JSON.parse(s))
+    ? [...new Set(summary.map((s: any) => JSON.stringify({ version_id: s.version_id, model_id: s.model_id, version_label: s.version_label || `v${s.version_id}`, model_label: s.model_label || `model${s.model_id}` })))].map((s: any) => JSON.parse(s))
     : []
 
   const summaryColumns = [
-    { title: '版本', dataIndex: 'version_label', key: 'version_label', render: (v: string, r: any) => v || `v${r.prompt_version_id}` },
-    { title: '模型', dataIndex: 'model_label', key: 'model_label', render: (v: string, r: any) => v || `model${r.model_config_id}` },
+    { title: '版本', dataIndex: 'version_label', key: 'version_label', render: (v: string, r: any) => v || `v${r.version_id}` },
+    { title: '模型', dataIndex: 'model_label', key: 'model_label', render: (v: string, r: any) => v || `model${r.model_id}` },
     { title: '平均分', dataIndex: 'avg_score', key: 'avg_score', render: (v: number | null) => v != null ? <Tag color={scoreColor(v)}>{v.toFixed(2)}</Tag> : '-' },
     { title: '通过率', dataIndex: 'pass_rate', key: 'pass_rate', render: (v: number | null) => v != null ? `${(v * 100).toFixed(1)}%` : '-' },
   ]
@@ -74,7 +74,7 @@ export default function RunComparePage() {
           label: '汇总',
           children: (
             <Table
-              rowKey={(r) => `${r.prompt_version_id}_${r.model_config_id}`}
+              rowKey={(r) => `${r.version_id}_${r.model_id}`}
               dataSource={summary}
               columns={summaryColumns}
               pagination={false}
@@ -107,11 +107,11 @@ export default function RunComparePage() {
                     <Text strong>{item.test_case_name || `用例 #${item.test_case_id}`}</Text>
                     <div style={{ display: 'flex', gap: 16, marginTop: 8, flexWrap: 'wrap' }}>
                       {item.results?.map((r: any, i: number) => (
-                        <Card key={i} size="small" style={{ width: 300, borderRadius: 12 }} title={`${r.version_label || `v${r.prompt_version_id}`} × ${r.model_label || `m${r.model_config_id}`}`}>
+                        <Card key={i} size="small" style={{ width: 300, borderRadius: 12 }} title={`${r.version_label || `v${r.version_id}`} × ${r.model_label || `m${r.model_id}`}`}>
                           <Tooltip title={r.output}>
                             <Text ellipsis style={{ maxWidth: 260 }}>{r.output || '-'}</Text>
                           </Tooltip>
-                          {r.judge_score != null && <Tag color={scoreColor(r.judge_score)} style={{ marginTop: 4 }}>分数：{r.judge_score}</Tag>}
+                          {r.auto_score != null && <Tag color={scoreColor(r.auto_score)} style={{ marginTop: 4 }}>分数：{r.auto_score}</Tag>}
                         </Card>
                       ))}
                     </div>
