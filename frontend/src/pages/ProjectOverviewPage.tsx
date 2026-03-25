@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Tabs, Card, Button, Modal, Form, Input, Select, Table, message, Popconfirm, Typography } from 'antd'
+import { Tabs, Card, Button, Modal, Form, Input, Select, Table, message, Popconfirm, Typography, Space } from 'antd'
 import { PlusOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons'
 import { getProject, updateProject, listPrompts, listRuns } from '../api/projects'
 import { createPrompt, deletePrompt } from '../api/prompts'
@@ -139,6 +139,7 @@ export default function ProjectOverviewPage() {
 
   const runColumns = [
     { title: 'ID', dataIndex: 'id', key: 'id' },
+    { title: '名称', dataIndex: 'name', key: 'name' },
     {
       title: '状态',
       dataIndex: 'status',
@@ -218,7 +219,20 @@ export default function ProjectOverviewPage() {
         {
           key: 'runs',
           label: '运行记录',
-          children: <Table rowKey="id" dataSource={runs} columns={runColumns} />,
+          children: (
+            <>
+              <Space style={{ marginBottom: 16 }}>
+                <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate(`/projects/${pid}/new-run`)}>新建运行</Button>
+                <Button onClick={() => navigate(`/projects/${pid}/runs`)}>查看全部</Button>
+              </Space>
+              <Table
+                rowKey="id"
+                dataSource={runs}
+                columns={runColumns}
+                onRow={(record) => ({ onClick: () => navigate(`/projects/${pid}/runs/${record.id}`), style: { cursor: 'pointer' } })}
+              />
+            </>
+          ),
         },
       ]} />
 
